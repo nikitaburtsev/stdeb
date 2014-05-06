@@ -4,12 +4,12 @@
 # vi: set ft=ruby :
 
 Vagrant::Config.run do |config|
-  config.vm.box = "precise64"
-  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+  config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+  config.vm.box = "trusty-server-cloudimg-amd64-vagrant-disk1"
 
   # install prerequisites for stdeb and tests
   config.vm.provision :shell, :inline => "apt-get update"
-  config.vm.provision :shell, :inline => "apt-get install --yes debhelper python-all-dev python-setuptools apt-file libxml2-dev libxslt1-dev"
+  config.vm.provision :shell, :inline => "apt-get install --yes debhelper python-all-dev python-setuptools apt-file libxml2-dev libxslt1-dev zlib1g-dev"
 
   # We need to copy files to a new dir to prevent vagrant filesystem issues.
   config.vm.provision :shell, :inline => "cp -a /vagrant /tmp/vagrant_copy"
