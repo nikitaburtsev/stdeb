@@ -28,10 +28,26 @@ Several convenience utilities are also provided:
 
 .. contents::
 
-Python 3
---------
 
-No attempt had been yet made to get stdeb to work with Python 3.
+Python 3 support
+----------------
+
+As explained in more detail below, the heart of stdeb is the sdist_dsc
+distutils command. This command runs once to generate a Debian source
+package. This Debian source package can specify building packages for
+Python 2, Python 3, or both. Furthermore, this generation can be done
+with the Python 2 or Python 3 interpreter. By default, only packages
+are built for the version of Python being used. To override this, use
+``--with-python2=True`` or ``--with-python3=True`` as an argument to
+the sdist_dsc distutils command (or use both to be sure). For example,
+to build only a Python 3 package using the Python 3 interpreter::
+
+  python3 setup.py --command-packages=stdeb.command bdist_deb
+
+To build both Python 2 and Python 3 packages using the Python 3
+interpreter (and only the Python3 package installs scripts)::
+
+  python3 setup.py --command-packages=stdeb.command sdist_dsc --with-python2=True --with-python3=True --no-python2-scripts=True bdist_deb
 
 News
 ----
@@ -41,6 +57,31 @@ master branch
 
 This branch is recommended for all users. It is currently tested on
 Ubuntu 12.04.
+
+ * 2014-x-y: **Version 0.8.0 (unreleased)**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.0>`__. Highlights for this
+   release (you may also wish to consult the full `changelog
+   <http://github.com/astraw/stdeb/blob/release-0.8.0/CHANGELOG.txt>`__). Highlights
+   since 0.7.1:
+
+   - Full support for Python 3. This includes being run from Python 3
+     and generating packages for Python 3. The default is to build
+     Python 3 packages when run with Python 3 and to build Python 2
+     packages when run from Python 2. Command line options can be used
+     to build packages for the other Python interpreter, too.
+
+   - Build .changes file for source package. While this still must be
+     signed for upload to a PPA, for example, it should still be
+     useful in some cases.
+
+   - Switch to Debian source format 3.0 (quilt). Practically speaking,
+     the .diff.gz file that used to come with a source package is now
+     replaced by a .debian.tar.gz file.
+
+   - Verify SSL certificates when talking to PyPI using
+     Requests. (Verification requires Requests >= 0.8.8.)
+
+   - Many bugfixes.
 
  * 2014-05-05: **Version 0.7.1**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.7.1>`__. Highlights for this
@@ -411,7 +452,8 @@ be used.
 I wrote this initially to Debianize several Python packages of my own,
 but I have the feeling it could be generally useful. It appears
 similar, at least in theory, to easydeb_, `Logilab's Devtools`_,
-bdist_dpkg_, bdist_deb_ and pkgme_.
+bdist_dpkg_, bdist_deb_, pkgme_ and `dh-virtualenv
+<https://github.com/spotify/dh-virtualenv>`_.
 
 .. _easydeb: http://easy-deb.sourceforge.net/
 .. _Logilab's DevTools: http://www.logilab.org/projects/devtools
@@ -478,7 +520,7 @@ the ~/.pydistutils.cfg file.) In that case, put the arguments in the
 file might have this::
 
   [sdist_dsc]
-  force-buildsystem: False
+  debian-version: 0MyName1
 
 To pass these commands to sdist_dsc when calling bdist_deb, do this::
 
@@ -487,6 +529,10 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
 ====================================== =========================================
         Command line option                      Effect
 ====================================== =========================================
+  --with-python2                       build Python 2 package (default=True)
+  --with-python3                       build Python 3 package (default=False)
+  --no-python2-scripts                 disable installation of Python 2 scripts (default=False)
+  --no-python3-scripts                 disable installation of Python 3 scripts (default=False)
   --dist-dir (-d)                      directory to put final built
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when
@@ -510,8 +556,6 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --remove-expanded-source-dir (-r)    remove the expanded source directory
   --ignore-install-requires (-i)       ignore the requirements from
                                        requires.txt in the egg-info directory
-  --force-buildsystem                  If True (the default), set 'DH_OPTIONS=
-                                       --buildsystem=python_distutils'
   --no-backwards-compatibility         This option has no effect, is here for
                                        backwards compatibility, and may be
                                        removed someday.
