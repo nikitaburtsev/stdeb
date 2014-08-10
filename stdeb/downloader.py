@@ -1,15 +1,18 @@
+from __future__ import print_function
 import os
-import xmlrpclib
+try:
+    # Python 2.x
+    import xmlrpclib
+except ImportError:
+    # Python 3.x
+    import xmlrpc.client as xmlrpclib
+from functools import partial
 import requests
 import hashlib
 import warnings
 from stdeb.transport import RequestsTransport
 
-def myprint(mystr,fd=None):
-    if fd is None:
-        print mystr
-    else:
-        print >> fd, mystr
+myprint=print
 
 USER_AGENT = 'pypi-install/0.7.1 ( https://github.com/astraw/stdeb )'
 
@@ -72,6 +75,14 @@ def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
         raise ValueError('no package "%s" was found'%package_name)
     return download_url, expected_md5_digest
 
+def md5sum(filename):
+    # from http://stackoverflow.com/questions/7829499/using-hashlib-to-compute-md5-digest-of-a-file-in-python-3
+    with open(filename, mode='rb') as f:
+        d = hashlib.md5()
+        for buf in iter(partial(f.read, 128), b''):
+            d.update(buf)
+    return d.hexdigest()
+
 def get_source_tarball(package_name,verbose=0,allow_unsafe_download=False,
                        release=None):
     download_url, expected_md5_digest = find_tar_gz(package_name,
@@ -86,9 +97,7 @@ def get_source_tarball(package_name,verbose=0,allow_unsafe_download=False,
     fname = download_url.split('/')[-1]
     if expected_md5_digest is not None:
         if os.path.exists(fname):
-            m = hashlib.md5()
-            m.update(open(fname,mode='r').read())
-            actual_md5_digest = m.hexdigest()
+            actual_md5_digest = md5sum(fname)
             if actual_md5_digest == expected_md5_digest:
                 if verbose >= 1:
                     myprint( 'Download URL: %s' % download_url )
