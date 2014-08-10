@@ -6,14 +6,32 @@ set -e
 ## remove old build results
 rm -rf deb_dist
 
+# setup paths
+
+if [ "${PYEXE}" == "" ]; then
+  PYEXE=`which python`;
+fi
+
+echo "using Python at ${PYEXE}"
+
+PY2DSC_LOC=`which py2dsc`
+PY2DSC_DEB_LOC=`which py2dsc-deb`
+PYPI_DOWNLOAD_LOC=`which pypi-download`
+PYPI_INSTALL_LOC=`which pypi-install`
+
+PY2DSC="${PYEXE} ${PY2DSC_LOC}"
+PY2DSC_DEB="${PYEXE} ${PY2DSC_DEB_LOC}"
+PYPI_DOWNLOAD="${PYEXE} ${PYPI_DOWNLOAD_LOC}"
+PYPI_INSTALL="${PYEXE} ${PYPI_INSTALL_LOC}"
+
 # Run tests
 
 ## Test some basic tests. Just make sure these don't fail.
 
-py2dsc --help > /dev/null
-py2dsc-deb --help > /dev/null
-pypi-download --help > /dev/null
-pypi-install --help > /dev/null
+${PY2DSC} --help > /dev/null
+${PY2DSC_DEB} --help > /dev/null
+${PYPI_DOWNLOAD} --help > /dev/null
+${PYPI_INSTALL} --help > /dev/null
 
 ## Run test cases on each of the following packages
 
@@ -47,11 +65,11 @@ fi
 
 # get a file to work with
 # ==============================================================
-pypi-download ${SOURCE_PACKAGE} --release ${SOURCE_RELEASE}
+${PYPI_DOWNLOAD} ${SOURCE_PACKAGE} --release ${SOURCE_RELEASE}
 
 # case 1: build from pre-existing source tarball with py2dsc
 # ==============================================================
-py2dsc $SOURCE_TARBALL
+${PY2DSC} $SOURCE_TARBALL
 
 cd deb_dist/$DEBSOURCE
 dpkg-buildpackage -rfakeroot -uc -us
@@ -82,7 +100,7 @@ cd deb_dist/$DEBSOURCE
 dpkg-buildpackage -rfakeroot -uc -us
 cd ../..
 for DEBFILE in deb_dist/*.deb; do
-  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
+  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 2:"
   dpkg --contents $DEBFILE
 done
 DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
@@ -101,10 +119,10 @@ rm -rf $SOURCE_TARBALL_DIR
 
 # case 3: build from pre-existing source tarball with py2dsc
 # ==============================================================
-py2dsc-deb $SOURCE_TARBALL
+${PY2DSC_DEB} $SOURCE_TARBALL
 
 for DEBFILE in deb_dist/*.deb; do
-  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
+  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 3:"
   dpkg --contents $DEBFILE
 done
 DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
