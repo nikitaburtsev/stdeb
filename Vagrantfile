@@ -11,7 +11,7 @@ Vagrant::Config.run do |config|
   config.vm.provision :shell, :inline => "apt-get update"
   config.vm.provision :shell, :inline => <<-SH
     export DEBIAN_FRONTEND=noninteractive
-    apt-get install --yes debhelper python-all-dev python-setuptools apt-file libxml2-dev libxslt1-dev zlib1g-dev python-requests python3-all-dev python3-setuptools
+    apt-get install --yes debhelper python-all-dev python-setuptools apt-file python-requests python3-all-dev python3-setuptools libpq-dev
     wget http://debs.strawlab.org/precise/python3-requests_2.3.0-0ads1_all.deb -O python3-requests_2.3.0-0ads1_all.deb
     dpkg -i python3-requests_2.3.0-0ads1_all.deb
 SH
